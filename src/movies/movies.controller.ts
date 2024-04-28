@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
 import { Movie } from './entities/movie.entity';
@@ -46,7 +46,13 @@ export class MoviesController {
     // 다만 id: string에 쓴 id 값은 달라도 됨 - 근데 그냥 맞추자
     getOne(@Param('id') id: string): Movie {
         // return `This will return ONE movie with id: ${id}`;
-        return this.moviesService.getOne(id);
+        // return this.moviesService.getOne(id);
+        const movie = this.moviesService.getOne(id);
+        if (!movie) {
+            throw new NotFoundException(`Movie with ID ${id} not found`);
+        }
+
+        return movie;
     }
 
     @ApiOperation({summary : "post endpoint"})
@@ -67,11 +73,15 @@ export class MoviesController {
         description: "DELETE - delete ONE moive, show remains"
     })
     @Delete(':id')
-    removeMovie(@Param("id") movieId: string): Movie[] {
+    removeMovie(@Param("id") movieId: string) {
         // ! 이렇게 delete와 param을 맞추고, 
         // ! 구분지어서 매개변수의 movieId와 return안에 들어가는 movieId를 맞춰도 된다
         // return `This will remove ${movieId} movie`;
-        return this.moviesService.deleteOne(movieId);
+        // return this.moviesService.deleteOne(movieId);
+        // 삭제하고자 하는 영화를 찾고
+        this.getOne(movieId);
+        // 남은 영화들을 출력
+        this.moviesService.deleteOne(movieId);
     }
 
     // ! put은 리소스 전체를 업데이트할 때 사용하고 Patch는 일부를 업데이트할 때 사용

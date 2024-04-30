@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MoviesService } from './movies.service';
+import { CreateMovieDTO } from './dto/create-movie.dto';
+import { UpdateMovieDTO } from './dto/update-movie.dto';
 import { Movie } from './entities/movie.entity';
 
 @ApiTags("Movie Controller")
@@ -29,7 +31,7 @@ export class MoviesController {
     // ! 순서도 중요함. - id보다 밑에 있으면 search를 id로 판단함
     @Get('search')
     // ! Query -> http.../search?year=2024
-    searchMovie(@Query('year') searchingYear: string) {
+    searchMovie(@Query('year') searchingYear: string): Movie[] {
         // return `We are searching for a movie made after: ${searchingYear}`
         return this.moviesService.searchMovie(searchingYear);
     }
@@ -44,7 +46,7 @@ export class MoviesController {
     // ! @Param으로 파라미터 추가 - url에 값을 추가한다는 것을 이해함
     // ! Get 안에 쓴 :[id]의 값과 @Param안에 쓴 ("[id]")의 값은 같아야 함
     // 다만 id: string에 쓴 id 값은 달라도 됨 - 근데 그냥 맞추자
-    getOne(@Param('id') id: string): Movie {
+    getOne(@Param('id') id: number): Movie {
         // return `This will return ONE movie with id: ${id}`;
         // return this.moviesService.getOne(id);
         const movie = this.moviesService.getOne(id);
@@ -61,7 +63,7 @@ export class MoviesController {
         description: "POST - create ONE movie"
     })
     @Post()
-    createMovie(@Body() movieData: Movie) {
+    createMovie(@Body() movieData: CreateMovieDTO) {
         // console.log(movieData)
         // return movieData;
         return this.moviesService.createMovie(movieData);
@@ -73,12 +75,13 @@ export class MoviesController {
         description: "DELETE - delete ONE moive, show remains"
     })
     @Delete(':id')
-    removeMovie(@Param("id") movieId: string) {
+    removeMovie(@Param("id") movieId: number) {
         // ! 이렇게 delete와 param을 맞추고, 
         // ! 구분지어서 매개변수의 movieId와 return안에 들어가는 movieId를 맞춰도 된다
         // return `This will remove ${movieId} movie`;
         // return this.moviesService.deleteOne(movieId);
         // 삭제하고자 하는 영화를 찾고
+        // 여기서 에러가 안나면 문제가 없음
         this.getOne(movieId);
         // 남은 영화들을 출력
         this.moviesService.deleteOne(movieId);
@@ -91,11 +94,12 @@ export class MoviesController {
         description: "PATCH - ID 값을 사용하여 한 영화의 정보를 업데이트 함"
     })
     @Patch(':id')
-    patchMovie(@Param('id') movieId: string, @Body() updateData: Movie) {
+    patchMovie(@Param('id') movieId: number, @Body() updateData: UpdateMovieDTO) {
         // return `This will patch ${movieId} movie\'s information`;
-        return {
-            updatedMovie: movieId,
-            ...updateData,
-        }  
+        // return {
+        //     updatedMovie: movieId,
+        //     ...updateData,
+        // }  
+        return this.moviesService.update(movieId, updateData);
     }
 }

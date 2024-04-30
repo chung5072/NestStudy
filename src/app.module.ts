@@ -12,16 +12,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MoviesController } from './movies/movies.controller';
-import { MoviesService } from './movies/movies.service';
+import { MoviesModule } from './movies/movies.module';
 
 /**
  * @: 데코레이터
  * 클래스에 함수 기능을 추가할 수 있음
  */
 @Module({
-  imports: [],
-  controllers: [AppController, MoviesController],
-  providers: [AppService, MoviesService],
+  imports: [MoviesModule], // 전체 앱 안에 들어있는 module를 작성
+  controllers: [AppController], // 연결 컨트롤러
+  providers: [AppService], // 비즈니스 로직
 })
 export class AppModule {}
